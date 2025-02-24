@@ -1,0 +1,33 @@
+{
+  "name": "oaica",
+  "version": "1.0.0",
+  "description": "A CLI tool built with TypeScript",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "oaica": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup --clean --format esm --dts --platform node src/index.ts",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "proto": "protoc --ts_proto_out=./src/proto --ts_proto_opt=oneof=unions --proto_path=./proto core.proto"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.3",
+    "cli-color": "^2.0.4",
+    "commander": "^13.1.0",
+    "express": "^4.21.2",
+    "spark-sdk": "file:/Users/kevinzhang/Developer/spark-go/sdks/spark-js-sdk",
+    "ts-proto": "^2.6.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/cli-color": "^2.0.6",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.4",
+    "tsup": "^8.3.6",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

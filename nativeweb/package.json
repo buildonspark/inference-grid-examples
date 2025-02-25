@@ -12,6 +12,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@buildonspark/spark-sdk": "^0.0.2",
     "@chenfengyuan/vue-qrcode": "^2.0.0",
     "@mdi/font": "7.4.47",
     "@noble/ed25519": "^2.2.3",
@@ -20,7 +21,6 @@
     "core-js": "^3.37.1",
     "roboto-fontface": "*",
     "spark-ig-sdk": "file:../spark-ig-sdk",
-    "spark-sdk": "file:/Users/kevinzhang/Developer/spark-go/sdks/spark-js-sdk",
     "vue": "^3.4.31",
     "vuetify": "^3.6.14"
   },

@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 
 import {Command} from 'commander';
-import {SparkWallet} from 'spark-sdk'
+import {SparkWallet} from '@buildonspark/spark-sdk'
+import {Network} from '@buildonspark/spark-sdk/utils'
 import crypto from 'crypto';
 import readline from 'readline';
 import fs from 'fs';
 import express from 'express';
 import clc from 'cli-color';
 
-import {Config} from './config';
-import {createAuthenticatedSocket, handleRequest} from './adapter';
+import {Config} from './config.js';
+import {createAuthenticatedSocket, handleRequest} from './adapter.js';
 
 const program = new Command();
 
@@ -56,7 +57,7 @@ program.command('init')
       console.log('')
 
       // Load or create a Spark wallet
-      let wallet = new SparkWallet(network === 'MAINNET' ? 0 : 1);
+      let wallet = new SparkWallet(network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
       let mnemonic = await new Promise<string>((resolve) => {
         rl.question(
             'Enter your Spark mnemonic (leave blank for new wallet): ',
@@ -64,11 +65,11 @@ program.command('init')
       });
 
       if (mnemonic.length > 0) {
-        await wallet.createSparkWallet(mnemonic);
+        await wallet.initWallet(mnemonic);
       } else {
         console.log('Creating new wallet...');
-        mnemonic = await wallet.generateMnemonic();
-        await wallet.createSparkWallet(mnemonic);
+        const result = await wallet.initWallet();
+        mnemonic = result.mnemonic!;
         console.log(green('Mnemonic:'), mnemonic);
         console.log('')
       }
@@ -100,12 +101,11 @@ program.command('wallet')
       const config = Config.load('oaica.json');
       config.validate();
 
-      const wallet = new SparkWallet(config.network === 'MAINNET' ? 0 : 1);
-      await wallet.createSparkWallet(config.spark.mnemonic);
-      await wallet.claimTransfers();
+      const wallet = new SparkWallet(config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
+      await wallet.initWallet(config.spark.mnemonic);
 
       const balance = await wallet.getBalance();
-      console.log(`Current balance: ${balance}`);
+      console.log(`Current balance: ${balance.balance}`);
 
       const rl = readline.createInterface({
         input: process.stdin,
@@ -116,18 +116,15 @@ program.command('wallet')
       });
       const invoice = await wallet.createLightningInvoice({
         amountSats: parseInt(amountSats),
-        expirySeconds: 6000,
         memo: 'Inference Grid Spark Wallet Deposit',
       })
       console.log(`Invoice created: ${invoice}`);
 
-      const numChecks = 10;
+      const numChecks = 20;
       for (let i = 0; i < numChecks; i++) {
         console.log(`Checking for deposits (${i}/${numChecks})...`);
-        await wallet.claimTransfers();
-        await wallet.syncTokenLeaves();
         const newBalance = await wallet.getBalance();
-        if (newBalance > balance) {
+        if (newBalance.balance > balance.balance) {
           console.log(`Deposit received!`);
           break;
         }
@@ -154,8 +151,8 @@ program.command('serve [config]')
       console.log(green('Connection successful!'));
 
       console.log('Initializing Spark wallet...');
-      let wallet = new SparkWallet(1);
-      await wallet.createSparkWallet(config.spark.mnemonic);
+      let wallet = new SparkWallet(config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
+      await wallet.initWallet(config.spark.mnemonic);
       const balance = await wallet.getBalance();
       console.log(`Balance: ${balance}`);
 

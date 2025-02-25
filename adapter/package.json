@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.3",
+    "@buildonspark/spark-sdk": "^0.0.2",
     "cli-color": "^2.0.4",
     "commander": "^13.1.0",
     "express": "^4.21.2",
-    "spark-sdk": "file:/Users/kevinzhang/Developer/spark-go/sdks/spark-js-sdk",
     "ts-proto": "^2.6.1",
     "ws": "^8.18.0"
   },

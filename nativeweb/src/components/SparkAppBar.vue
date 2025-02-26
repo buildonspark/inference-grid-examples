@@ -156,7 +156,6 @@ const generateInvoice = () => {
     loading.value = true;
     wallet.createLightningInvoice({
         amountSats: parseInt(amount.value as any),
-        expirySeconds: 60 * 60 * 24,
         memo: "Inference Grid Web Demo",
     }).then((obj) => {
         invoice.value = obj;

@@ -20,7 +20,7 @@ interface Message {
     content: string;
 }
 
-interface ClientConfig {
+export interface ClientConfig {
     network: Network;
     publicKey: string;
     privateKey: string;
@@ -35,7 +35,6 @@ interface ChatOptions {
 
 export class InferenceGridClient {
     private config: ClientConfig;
-    private requestId = 0;
 
     constructor(config: ClientConfig) {
         this.config = config;
@@ -164,7 +163,7 @@ export class InferenceGridClient {
             payload: {
                 $case: 'chatCompletionRequest',
                 chatCompletionRequest: {
-                    requestId: this.requestId++,
+                    requestId: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
                     messages: messages.map(m => ({
                         role: m.role,
                         content: {

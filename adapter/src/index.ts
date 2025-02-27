@@ -57,7 +57,8 @@ program.command('init')
       console.log('')
 
       // Load or create a Spark wallet
-      let wallet = new SparkWallet(network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
+      let wallet = new SparkWallet(
+          network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
       let mnemonic = await new Promise<string>((resolve) => {
         rl.question(
             'Enter your Spark mnemonic (leave blank for new wallet): ',
@@ -65,6 +66,7 @@ program.command('init')
       });
 
       if (mnemonic.length > 0) {
+        console.log('Initializing wallet...');
         await wallet.initWallet(mnemonic);
       } else {
         console.log('Creating new wallet...');
@@ -101,10 +103,11 @@ program.command('wallet')
       const config = Config.load('oaica.json');
       config.validate();
 
-      const wallet = new SparkWallet(config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
+      const wallet = new SparkWallet(
+          config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
       await wallet.initWallet(config.spark.mnemonic);
 
-      const balance = await wallet.getBalance();
+      const balance = await wallet.getBalance(true);
       console.log(`Current balance: ${balance.balance}`);
 
       const rl = readline.createInterface({
@@ -123,7 +126,7 @@ program.command('wallet')
       const numChecks = 20;
       for (let i = 0; i < numChecks; i++) {
         console.log(`Checking for deposits (${i}/${numChecks})...`);
-        const newBalance = await wallet.getBalance();
+        const newBalance = await wallet.getBalance(true);
         if (newBalance.balance > balance.balance) {
           console.log(`Deposit received!`);
           break;
@@ -151,16 +154,24 @@ program.command('serve [config]')
       console.log(green('Connection successful!'));
 
       console.log('Initializing Spark wallet...');
-      let wallet = new SparkWallet(config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
+      let wallet = new SparkWallet(
+          config.network === 'MAINNET' ? Network.MAINNET : Network.REGTEST);
       await wallet.initWallet(config.spark.mnemonic);
-      const balance = await wallet.getBalance();
-      console.log(`Balance: ${balance}`);
+      const balance = await wallet.getBalance(true);
+      console.log(`Balance: ${balance.balance}`);
 
       async function payInvoice(invoice: string) {
         console.log(`Paying invoice ${invoice}...`);
-        await wallet.payLightningInvoice({
-          invoice: invoice,
-        })
+        wallet
+            .payLightningInvoice({
+              invoice: invoice,
+            })
+            .then((result) => {
+              console.log(green(`Payment: ${JSON.stringify(result)}`));
+            })
+            .catch((error) => {
+              console.error(red(`Error: ${error}`));
+            });
       }
 
       const app = express();
@@ -179,10 +190,6 @@ program.command('serve [config]')
                 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
             next();
           });
-
-      app.get('/', (req: express.Request, res: express.Response) => {
-        res.send('Hello, World!');
-      });
 
       app.post(
           '/chat/completions',

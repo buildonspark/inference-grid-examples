@@ -17,8 +17,13 @@
                         Wallet
                     </template>
                     <template v-else>
-                        <v-icon icon="custom:sats" size="small" start />
-                        {{ state.balance }} sats
+                        <template v-if="state.initialized">
+                            <v-icon icon="custom:sats" size="small" start />
+                            {{ state.balance }} sats
+                        </template>
+                        <template v-else>
+                            <v-progress-circular indeterminate color="white" size="14" />
+                        </template>
                     </template>
                 </v-chip>
             </template>

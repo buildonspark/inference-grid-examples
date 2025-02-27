@@ -39,7 +39,6 @@ export class InferenceGridClient {
     constructor(config: ClientConfig) {
         this.config = config;
         this.createAuthenticatedSocket().then((socket) => {
-            console.log('Connected to the Inference Grid!');
             socket.close();
         }).catch((err) => {
             console.error('Failed to connect to the Inference Grid:', err);
@@ -131,7 +130,6 @@ export class InferenceGridClient {
             socket.onerror = (event: Event) => reject(event);
         });
         
-        console.log(response);
         if (response.payload!.$case === 'registerClientResponse') {
             const resp = response.payload.registerClientResponse;
             if (!resp.ok) {

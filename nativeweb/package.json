@@ -4,7 +4,7 @@
   "type": "module",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "bash copy-wasm.sh && vite",
     "build": "bash copy-wasm.sh && run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
@@ -12,7 +12,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
-    "@buildonspark/spark-sdk": "^0.0.2",
+    "@buildonspark/spark-sdk": "^0.0.5",
     "@chenfengyuan/vue-qrcode": "^2.0.0",
     "@mdi/font": "7.4.47",
     "@noble/ed25519": "^2.2.3",

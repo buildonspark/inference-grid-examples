@@ -20,16 +20,9 @@
             <v-tooltip v-if="obj.invoice" text="Click to copy">
               <template v-slot:activator="{ props }">
                 <v-chip v-bind="props" class="mt-4" variant="outlined" @click="copyInvoice(obj.invoice)">
-                  <template v-if="obj.paid">
-                    <span class="text-success mr-1">
-                      PAID
-                    </span> |
-                  </template>
-                  <template v-if="!obj.paid">
-                    <span class="text-error mr-1">
-                      UNPAID
-                    </span> |
-                  </template>
+                  <span class="mr-1" :class="{ 'text-error': obj.status === InvoiceStatus.ERROR, 'text-success': obj.status === InvoiceStatus.PAID }">
+                    {{ obj.status }}
+                  </span> |
                   <span class="ml-1">
                     {{ obj.invoice.substring(0, 30) + '...' }}
                   </span>
@@ -52,13 +45,17 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { wallet, refreshBalance } from '../state';
-import { client, Role } from '../client';
+import { wallet, state, refreshBalance, client, Role } from '../state';
 
 const inputText = ref("");
 const loading = ref(false);
-
 const history = ref([] as any);
+
+enum InvoiceStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  ERROR = "ERROR",
+}
 
 const historyReversed = computed(() => {
   return history.value.slice().reverse();
@@ -68,12 +65,20 @@ function basicChat() {
   if (inputText.value.trim() === "") {
     return;
   }
+  if (!state.initialized) {
+    alert("Your wallet is not initialized yet!.");
+    return;
+  }
+  if (state.balance == 0) {
+    alert("Your wallet has no balance!.");
+    return;
+  }
 
   const obj = {} as any;
   obj.input = inputText.value;
   obj.output = "";
   obj.invoice = "";
-  obj.paid = false;
+  obj.status = InvoiceStatus.PENDING;
   history.value.push(obj);
   const idx = history.value.length - 1;
 
@@ -89,10 +94,13 @@ function basicChat() {
         invoice: invoice,
       }).then((result) => {
         console.log(result);
-        history.value[idx].paid = true;
+        history.value[idx].status = InvoiceStatus.PAID;
         setTimeout(() => {
           refreshBalance();
         }, 1000);
+      }).catch((error) => {
+        console.error(error);
+        history.value[idx].status = InvoiceStatus.ERROR;
       });
     }
   }
@@ -101,7 +109,7 @@ function basicChat() {
     {
       role: Role.USER,
       content: obj.input
-  }], {
+    }], {
     maxTokens: 1000,
     temperature: 0.9,
     tierSelector: '>3',

@@ -1,0 +1,23 @@
+{
+  "name": "chat-cli",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc",
+    "cli": "tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@buildonspark/spark-sdk": "^0.1.16",
+    "commander": "^13.1.0",
+    "inference-grid-sdk": "^0.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.18",
+    "typescript": "^5.8.3"
+  }
+}
